@@ -1,0 +1,27 @@
+version: '3.1'
+
+services:
+
+  main-service:
+    image: "maldanam/itineraries-service"
+    ports:
+      - "8080:8080"
+
+  data-service:
+    image: "maldanam/flight-data-service"
+    ports:
+      - "8081:8080"
+    
+  postgres:
+    image: "maldanam/adidas-postgres"
+    build: ./itineraries-database
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mysecretpassword
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+   
+volumes:
+  pgdata:
+  
