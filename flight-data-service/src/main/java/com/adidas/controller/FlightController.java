@@ -1,6 +1,7 @@
 package com.adidas.controller;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -22,12 +23,12 @@ public class FlightController {
 	@GetMapping(path="/search")
 	public @ResponseBody Iterable<Flight> getFlightsFrom(@RequestParam String from, 
 														 @RequestParam(required=false) 
-														 @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime takeoffAfter) {
+														 @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Optional<LocalDateTime> takeoffAfter) {
 		
-		if (takeoffAfter == null) {
-			return flightRepository.findByFromCityIgnoreCase(from);			
+		if (takeoffAfter.isPresent()) {
+			return flightRepository.findByFromCityIgnoreCaseAndTakeoffTimeGreaterThan(from, takeoffAfter.get());			
 		} else {
-			return flightRepository.findByFromCityIgnoreCaseAndTakeoffTimeGreaterThan(from, takeoffAfter);			
+			return flightRepository.findByFromCityIgnoreCase(from);			
 		}
 	}
 
