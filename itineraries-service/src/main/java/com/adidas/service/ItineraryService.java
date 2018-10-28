@@ -22,17 +22,20 @@ public class ItineraryService {
 		
     	List<Itinerary> result = new ArrayList<>();
     	
-    	Map<Boolean, List<Itinerary>> itineraries = flightService.getFlights(from, Optional.ofNullable(null))
+    	List<Flight> targetFlights = flightService.getFlightsTo(to, Optional.ofNullable(null));
+    	
+    	Map<Boolean, List<Itinerary>> itineraries = flightService.getFlightsFrom(from, Optional.ofNullable(null))
     				 		  									 .stream()
-    				 		  									 .map(f -> new Itinerary(from, to, f))
+    				 		  									 .map(f -> new Itinerary(from, to, f, targetFlights))
     				 		  									 .collect(Collectors.partitioningBy(Itinerary::isComplete));
     	
-    	List<Itinerary> complete = itineraries.get(Boolean.TRUE);
-    	List<Itinerary> incomplete = itineraries.get(Boolean.FALSE);
+    	List<Itinerary> completeItineraries = itineraries.get(Boolean.TRUE);
+    	List<Itinerary> incompleteItineraries = itineraries.get(Boolean.FALSE);
     	
-    	result.addAll(complete);
-    	if (!incomplete.isEmpty()) {
-        	result.addAll(completeIfPosible(incomplete));
+    	result.addAll(completeItineraries);
+    	if (!incompleteItineraries.isEmpty()) {
+    		
+        	result.addAll(completeIfPosible(completableItinerariesOf(incompleteItineraries)));
     	}
     	    	
         return result;
@@ -47,12 +50,13 @@ public class ItineraryService {
 				  											  .flatMap(List::stream)
 				  											  .collect(Collectors.partitioningBy(Itinerary::isComplete));
 		
-	   	List<Itinerary> complete = itineraries.get(Boolean.TRUE);
-	   	List<Itinerary> incomplete = itineraries.get(Boolean.FALSE);
+	   	List<Itinerary> completeItineraries = itineraries.get(Boolean.TRUE);
+	   	List<Itinerary> stillIncompleteItineraries = itineraries.get(Boolean.FALSE);
 	   	
-	   	result.addAll(complete);
-    	if (!incomplete.isEmpty()) {
-        	result.addAll(completeIfPosible(incomplete));
+	   	result.addAll(completeItineraries);
+    	if (!stillIncompleteItineraries.isEmpty()) {
+    		
+        	result.addAll(completeIfPosible(completableItinerariesOf(stillIncompleteItineraries)));
     	}
     	return result;
 	}
@@ -63,23 +67,30 @@ public class ItineraryService {
 
     	Flight lastFlight = incompleteItinerary.getLastFlight();
     	
-		List<Flight> nextFlights = flightService.getFlights(lastFlight.getToCity(), Optional.of(lastFlight.getLandingTime()));
+		List<Flight> nextFlights = flightService.getFlightsFrom(lastFlight.getToCity(), Optional.of(lastFlight.getLandingTime()));
 		if (!nextFlights.isEmpty()) {
 			
 	    	Map<Boolean, List<Itinerary>> itineraries = nextFlights.stream()
 					 											   .map(f -> new Itinerary(incompleteItinerary, f))
 					 											   .collect(Collectors.partitioningBy(Itinerary::isComplete));
 
-		   	List<Itinerary> complete = itineraries.get(Boolean.TRUE);
-		   	List<Itinerary> incomplete = itineraries.get(Boolean.FALSE);
+		   	List<Itinerary> completeItineraries = itineraries.get(Boolean.TRUE);
+		   	List<Itinerary> incompleteItineraries = itineraries.get(Boolean.FALSE);
 		   	
-		   	result.addAll(complete);
-	    	if (!incomplete.isEmpty()) {
-	        	result.addAll(completeIfPosible(incomplete));
+		   	result.addAll(completeItineraries);
+	    	if (!incompleteItineraries.isEmpty()) {
+	    		
+	        	result.addAll(completeIfPosible(completableItinerariesOf(incompleteItineraries)));
 	    	}
    	    	
 		}
         return result;
 	}
 
+	private List<Itinerary> completableItinerariesOf(List<Itinerary> incompleteItineraries) {
+		
+		return incompleteItineraries.stream()
+									.collect(Collectors.partitioningBy(Itinerary::isCompletable))
+									.get(Boolean.TRUE);
+	}
 }

@@ -13,6 +13,8 @@ import com.adidas.entity.Flight;
 public interface FlightRepository extends CrudRepository<Flight, Integer> {
 	
 	List<Flight> findByFromCityIgnoreCase(String city);
+	List<Flight> findByToCityIgnoreCase(String city);
 	List<Flight> findByFromCityIgnoreCaseAndTakeoffTimeGreaterThan(String city, LocalDateTime takeoffTime);
+	List<Flight> findByToCityIgnoreCaseAndTakeoffTimeGreaterThan(String city, LocalDateTime takeoffTime);
 
 }

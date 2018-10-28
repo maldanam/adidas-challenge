@@ -1,6 +1,7 @@
 package com.adidas.controller;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.adidas.entity.Flight;
+import com.adidas.enums.CityRoleEnum;
 import com.adidas.repository.FlightRepository;
 
 @RestController
@@ -21,15 +23,30 @@ public class FlightController {
 	private FlightRepository flightRepository;
 	
 	@GetMapping(path="/search")
-	public @ResponseBody Iterable<Flight> getFlightsFrom(@RequestParam String from, 
-														 @RequestParam(required=false) 
-														 @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Optional<LocalDateTime> takeoffAfter) {
+	public @ResponseBody Iterable<Flight> getFlights(@RequestParam String city, 
+													 @RequestParam CityRoleEnum cityRole, 
+													 @RequestParam(required=false) 
+													 @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Optional<LocalDateTime> takeoffAfter) {
 		
-		if (takeoffAfter.isPresent()) {
-			return flightRepository.findByFromCityIgnoreCaseAndTakeoffTimeGreaterThan(from, takeoffAfter.get());			
-		} else {
-			return flightRepository.findByFromCityIgnoreCase(from);			
+		List<Flight> result = null;
+		
+		switch (cityRole) {
+		case FROM:
+			if (takeoffAfter.isPresent()) {
+				result = flightRepository.findByFromCityIgnoreCaseAndTakeoffTimeGreaterThan(city, takeoffAfter.get());			
+			} else {
+				result = flightRepository.findByFromCityIgnoreCase(city);			
+			}
+			break;
+		case TO:
+			if (takeoffAfter.isPresent()) {
+				result = flightRepository.findByToCityIgnoreCaseAndTakeoffTimeGreaterThan(city, takeoffAfter.get());			
+			} else {
+				result = flightRepository.findByToCityIgnoreCase(city);			
+			}
+			break;			
 		}
+		return result;
 	}
 
 }
