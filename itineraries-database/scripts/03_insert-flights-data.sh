@@ -24,4 +24,8 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
     insert into flight values (15, 'Murcia', 'Sevilla', '2018-10-29 15:00:00', '2018-10-29 15:30:00');
     insert into flight values (16, 'Murcia', 'Madrid', '2018-10-29 15:00:00', '2018-10-29 15:30:00');
 
+    insert into flight values (17, 'Lisboa', 'Paris', '2018-10-29 17:00:00', '2018-10-29 18:55:00');
+
+    insert into flight values (18, 'Madrid', 'Paris', '2018-10-30 11:00:00', '2018-10-30 12:55:00');
+
 EOSQL
